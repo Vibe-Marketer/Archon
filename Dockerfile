@@ -27,15 +27,20 @@ RUN pip install --no-cache-dir -r requirements.server.txt
 COPY python/ ./python/
 COPY migration/ ./migration/
 
-# Copy frontend build
+# Copy frontend build to the correct location for serving
+COPY --from=frontend-builder /app/frontend/dist ./python/static
 COPY --from=frontend-builder /app/frontend/dist ./static
 
 # Set environment variables
 ENV PYTHONPATH=/app/python
 ENV SERVER_PORT=8181
+ENV PROD=true
+
+# Install a simple HTTP server for the frontend
+RUN pip install aiofiles
 
 # Expose port
 EXPOSE 8181
 
 # Start the backend server (which will also serve the frontend)
-CMD ["python", "-m", "uvicorn", "src.server.main:app", "--host", "0.0.0.0", "--port", "8181"]
+CMD ["python", "-m", "uvicorn", "src.server.main:app", "--host", "0.0.0.0", "--port", "8181", "--root-path", "/"]
