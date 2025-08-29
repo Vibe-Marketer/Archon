@@ -207,10 +207,11 @@ if PROD:
             break
     
     if static_dir:
-        # Mount static files
-        app.mount("/assets", StaticFiles(directory=str(static_dir)), name="assets")
+        # Mount static files at /assets for JavaScript/CSS files
+        if (static_dir / "assets").exists():
+            app.mount("/assets", StaticFiles(directory=str(static_dir / "assets")), name="assets")
         
-        # Serve index.html for root and non-API routes
+        # Serve index.html for root
         @app.get("/", response_class=FileResponse)
         async def serve_frontend_root():
             index_path = static_dir / "index.html"

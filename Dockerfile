@@ -42,5 +42,5 @@ ENV PROD=true
 # Expose port
 EXPOSE 8181
 
-# Start the backend server
-CMD ["python", "-m", "uvicorn", "src.server.main:socket_app", "--host", "0.0.0.0", "--port", "8181"]
+# Start the backend server - use PORT from environment (Railway sets this)
+CMD python -m uvicorn src.server.main:socket_app --host 0.0.0.0 --port ${PORT:-8181}
