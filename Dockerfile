@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python requirements and install
-COPY python/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY python/requirements.server.txt ./
+RUN pip install --no-cache-dir -r requirements.server.txt
 
 # Copy backend code
 COPY python/ ./python/
@@ -38,4 +38,4 @@ ENV SERVER_PORT=8181
 EXPOSE 8181
 
 # Start the backend server (which will also serve the frontend)
-CMD ["python", "-m", "uvicorn", "python.src.server.main:app", "--host", "0.0.0.0", "--port", "8181"]
+CMD ["python", "-m", "uvicorn", "src.server.main:app", "--host", "0.0.0.0", "--port", "8181"]
