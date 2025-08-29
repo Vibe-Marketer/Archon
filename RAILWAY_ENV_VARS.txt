@@ -1,0 +1,23 @@
+# ESSENTIAL Environment Variables for Railway
+# Copy these EXACTLY as shown into Railway's Variables tab
+
+SUPABASE_URL=https://ypjffkganqnkgaqskggy.supabase.co
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwamZma2dhbnFua2dhcXNrZ2d5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MzEyMDczMiwiZXhwIjoyMDU4Njk2NzMyfQ.R6E-mJ2Fq6nPMCAGkkG19u6uBQY-STzE4knZHAFaMGo
+
+# Port Configuration
+SERVER_PORT=8181
+PORT=8181
+
+# Environment
+NODE_ENV=production
+LOG_LEVEL=INFO
+
+# Frontend Build Configuration
+VITE_API_BASE_URL=/api
+
+# Embedding Configuration
+EMBEDDING_DIMENSIONS=1536
+
+# IMPORTANT: After deployment, Railway will give you a URL like:
+# https://archon-production-xxxx.up.railway.app
+# You'll need to update CORS settings if needed

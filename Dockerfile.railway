@@ -23,24 +23,31 @@ RUN apt-get update && apt-get install -y \
 COPY python/requirements.server.txt ./
 RUN pip install --no-cache-dir -r requirements.server.txt
 
-# Install additional dependencies for static file serving
-RUN pip install aiofiles python-multipart
-
 # Copy backend code
 COPY python/ ./python/
 COPY migration/ ./migration/
 
-# Copy frontend build to the correct location for serving
+# Copy frontend build
 COPY --from=frontend-builder /app/frontend/dist ./static
 
-# Set environment variables
+# Set environment variables - Railway will override these
 ENV PYTHONPATH=/app/python
 ENV SERVER_PORT=8181
 ENV PORT=8181
-ENV PROD=true
+
+# Create a startup script to debug environment variables
+RUN echo '#!/bin/bash\n\
+echo "=== Environment Variables Debug ==="\n\
+echo "SUPABASE_URL: $SUPABASE_URL"\n\
+echo "SERVER_PORT: $SERVER_PORT"\n\
+echo "PORT: $PORT"\n\
+echo "NODE_ENV: $NODE_ENV"\n\
+echo "================================="\n\
+python -m uvicorn src.server.main:app --host 0.0.0.0 --port ${PORT:-8181}' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 8181
 
-# Start the backend server
-CMD ["python", "-m", "uvicorn", "src.server.main:socket_app", "--host", "0.0.0.0", "--port", "8181"]
+# Start the backend server with environment variable debugging
+CMD ["/bin/bash", "/app/start.sh"]

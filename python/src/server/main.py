@@ -186,6 +186,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add static file serving for production
+PROD = os.getenv("PROD", "false").lower() == "true"
+if PROD:
+    from pathlib import Path
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+    
+    # Find the static directory
+    static_paths = [
+        Path("/app/static"),  # Docker container path
+        Path("./static"),  # Alternative path
+    ]
+    
+    static_dir = None
+    for path in static_paths:
+        if path.exists() and path.is_dir():
+            static_dir = path
+            logger.info(f"Found static directory at: {static_dir}")
+            break
+    
+    if static_dir:
+        # Mount static files
+        app.mount("/assets", StaticFiles(directory=str(static_dir)), name="assets")
+        
+        # Serve index.html for root and non-API routes
+        @app.get("/", response_class=FileResponse)
+        async def serve_frontend_root():
+            index_path = static_dir / "index.html"
+            if index_path.exists():
+                return FileResponse(index_path)
+            # Fall back to API info if no frontend
+            return {
+                "name": "Archon Knowledge Engine API",
+                "version": "1.0.0",
+                "description": "Backend API for knowledge management and project automation",
+                "status": "healthy",
+                "modules": ["settings", "mcp", "mcp-clients", "knowledge", "projects"],
+            }
+        
+        logger.info("✅ Static file serving configured for production")
+    else:
+        logger.warning("⚠️ Warning: Static directory not found in production mode")
+
 
 # Add middleware to skip logging for health checks
 @app.middleware("http")
@@ -217,17 +260,18 @@ app.include_router(coverage_router)
 app.include_router(bug_report_router)
 
 
-# Root endpoint
-@app.get("/")
-async def root():
-    """Root endpoint returning API information."""
-    return {
-        "name": "Archon Knowledge Engine API",
-        "version": "1.0.0",
-        "description": "Backend API for knowledge management and project automation",
-        "status": "healthy",
-        "modules": ["settings", "mcp", "mcp-clients", "knowledge", "projects"],
-    }
+# Root endpoint for non-production mode
+if not PROD:
+    @app.get("/")
+    async def root():
+        """Root endpoint returning API information."""
+        return {
+            "name": "Archon Knowledge Engine API",
+            "version": "1.0.0",
+            "description": "Backend API for knowledge management and project automation",
+            "status": "healthy",
+            "modules": ["settings", "mcp", "mcp-clients", "knowledge", "projects"],
+        }
 
 
 # Health check endpoint
